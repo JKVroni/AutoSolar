@@ -12,13 +12,18 @@ CENTER = [36.783316, 126.452611]
 WFS_URL = "https://api.vworld.kr/ned/wfs/getCtnlgsSpceWFS"
 API_KEY = "2999371B-F71D-32DA-85C3-ED9AB3C48403"
 
+color_map = {
+    "농지": "#f4a261",     # 주황색
+    "염전": "#2a9d8f",     # 청록색
+    "양어장": "#e76f51",   # 빨강색
+    "임야": "#264653"      # 진회색
+}
 
 st.sidebar.title("지목 필터")
-show_farmland = st.sidebar.checkbox("농지", value=True)
-show_salt = st.sidebar.checkbox("염전", value=True)
-show_fishfarm = st.sidebar.checkbox("양어장", value=True)
-show_forest = st.sidebar.checkbox("임야", value=True)
-
+show_farmland = st.sidebar.checkbox("🟧 농지", value=True)
+show_salt = st.sidebar.checkbox("🟩 염전", value=True)
+show_fishfarm = st.sidebar.checkbox("🟥 양어장", value=True)
+show_forest = st.sidebar.checkbox("⬛ 임야", value=True)
 
 m = folium.Map(location=CENTER, zoom_start=16, control_scale=True)
 st.title("Auto Solar")
@@ -84,13 +89,6 @@ def polygon_to_geojson(polygon, pnu):
         }
     }
 
-color_map = {
-    "농지": "#a5dc86",
-    "염전": "#86b9dc",
-    "양어장": "#86dcd3",
-    "임야": "#1f7a1f"
-}
-
 m = folium.Map(location=CENTER, zoom_start=16, control_scale=True)
 
 for feature in features:
@@ -116,7 +114,7 @@ for feature in features:
             'fillColor': fill if fill else 'transparent',
             'color': 'black',
             'weight': 1,
-            'fillOpacity': 0.5 if fill else 0.0
+            'fillOpacity': 0.3 if fill else 0.0
         },
         tooltip=folium.Tooltip(pnu)
     ).add_to(m)
