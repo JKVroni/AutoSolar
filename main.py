@@ -38,6 +38,10 @@ def get_bbox_from_bounds(bounds):
 
 bbox = get_bbox_from_bounds(st_map.get("bounds"))
 
+# ✅ 진단 코드 1: bbox 확인
+st.text("📦 현재 요청된 BBOX 좌표:")
+st.code(bbox)
+
 params = {
     "key": API_KEY,
     "domain": "localhost",
@@ -49,8 +53,26 @@ params = {
     "output": "text/xml; subtype=gml/2.1.2",
 }
 
-response = requests.get(WFS_URL, params=params)
+response = requests.get(WFS_URL, params=params, verify=False)
+
+# ✅ 진단 코드 2: 호출된 전체 URL, 응답 상태 코드
+st.text("🌐 호출된 WFS API URL:")
+st.code(response.url)
+st.text("📥 응답 상태 코드:")
+st.code(response.status_code)
+
 tree = ET.fromstring(response.content)
+
+if response.status_code != 200:
+    st.error(f"API 요청 실패: status code {response.status_code}")
+    st.stop()
+
+if b"<gml:featureMember" not in response.content:
+    st.warning("필지 데이터를 찾을 수 없습니다. 범위 안에 아무 필지도 없거나 API 파라미터가 잘못되었을 수 있습니다.")
+    st.text("응답 일부:")
+    st.code(response.content.decode("utf-8")[:1000])
+    st.stop()
+
 
 ns = {
     'gml': 'http://www.opengis.net/gml',
@@ -67,6 +89,13 @@ for member in tree.findall(".//gml:featureMember", ns):
         continue
     symbol = symbol_tag.text.strip()
     code = symbol[-1]  # 마지막 글자
+
+     # ✅ 진단 코드 3: pnu, 지목, 좌표 데이터 출력
+    st.text("🧾 필지 정보:")
+    st.code(f"{pnu} - {symbol} ({code})")
+
+    st.text("📐 좌표 데이터:")
+    st.code(g.text.strip()[:300])
 
     coords = [(float(x), float(y)) for x, y in [pt.split(',') for pt in g.text.strip().split()]]
     polygon = Polygon(coords)
